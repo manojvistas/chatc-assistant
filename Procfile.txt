@@ -1,0 +1,1 @@
+web: python ollama_llm_flask.py
