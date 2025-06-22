@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChatBot with Sidebar</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="{{ url_for('static', filename='chat.js') }}"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100 h-screen flex font-sans">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white shadow flex flex-col p-4 space-y-6">
+    <!-- Profile -->
+    <div class="flex items-center space-x-4">
+      <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-xl font-bold">U</div>
+      <div>
+        <p class="font-semibold">Username</p>
+        <button class="text-sm text-blue-500 hover:underline">Logout</button>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex flex-col space-y-4">
+      <button class="flex items-center space-x-2 text-gray-700 hover:text-blue-600">
+        <i data-lucide="clock" class="w-5 h-5"></i>
+        <span>Chat History</span>
+      </button>
+      <button class="flex items-center space-x-2 text-gray-700 hover:text-blue-600">
+        <i data-lucide="file" class="w-5 h-5"></i>
+        <span>Attached Files</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Chat Main Area -->
+  <div class="flex-1 flex flex-col">
+    <!-- Header -->
+    <header class="bg-white shadow p-4 text-xl font-semibold text-center">
+      ChatC
+    </header>
+      <!-- Chat Area -->
+    <main id="chatArea" class="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gray-100">
+
+    </main>
+    <!-- Input -->
+    <footer class="sticky bottom-0 bg-white border-t border-gray-200 p-4 flex gap-3 items-center">
+      <input
+      type="text"
+      id="userInput"
+       placeholder="Send a message..."
+       class="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring focus:border-blue-500"
+       />
+       <button
+       id="send-btn"
+       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full font-medium"
+       >
+       Send
+      </button>
+    </footer>
+  </div>
+  <script>
+    window.onload = () => {
+      document.getElementById('userInput').focus();
+    };
+    document.getElementById('send-btn').addEventListener('click', sendMessage);
+    document.getElementById('userInput').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+    async function sendMessage() {
+      const input = document.getElementById('userInput');
+      const message = input.value.trim();
+      if (message === '') return;
+      const chatArea = document.getElementById('chatArea');
+
+      // User's message
+      const userMsg = document.createElement('div');
+      userMsg.className = 'flex justify-end';
+      userMsg.innerHTML = `<div class="bg-blue-500 text-white p-3 rounded-lg max-w-md">${message}</div>`;
+      chatArea.appendChild(userMsg);
+
+      // Clear input after sending message
+      input.value = '';
+
+      // Show typing indicator
+      const typingIndicator = document.createElement('div');
+      typingIndicator.className = 'flex justify-start';
+      typingIndicator.innerHTML = `<div class="bg-gray-200 p-3 rounded-lg max-w-md">🤖 Typing...</div>`;
+      chatArea.appendChild(typingIndicator);
+
+      chatArea.scrollTop = chatArea.scrollHeight;
+
+      try {
+        const response = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: message })
+        });
+
+        const data = await response.json();
+        typingIndicator.remove();
+
+        const botReply = document.createElement('div');
+        botReply.className = 'flex';
+        botReply.innerHTML = `<div class="bg-gray-200 p-3 rounded-lg max-w-md">${data.response}</div>`;
+        chatArea.appendChild(botReply);
+
+        chatArea.scrollTop = chatArea.scrollHeight;
+      } catch (error) {
+        typingIndicator.remove();
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'flex';
+        errorMsg.innerHTML = `<div class="bg-red-100 text-red-700 p-3 rounded-lg max-w-md">⚠️ Bot is not responding. Please try again later.</div>`;
+        chatArea.appendChild(errorMsg);
+        chatArea.scrollTop = chatArea.scrollHeight;
+      }
+    }
+  </script>
+</body>
+</html>
