@@ -19,21 +19,17 @@ chain = prompt | llm | output_parser
 @app.route('/')
 def home():
     return render_template('index.html')
-
 @app.route('/chat', methods=['POST'])
 def chat():
     user_query = request.json.get('query')
-    
-    # Debugging/Logging - Print user input
     print(f"[User]: {user_query}")
-    
-    # Process query
-    response = chain.invoke({"query": user_query})
-    
-    # Debugging/Logging - Print bot response
+
+    # FAKE BOT RESPONSE for demo
+    response = "This is a demo response from Chatc Assistant 🤖"
+
     print(f"[Chatc Assistant]: {response}")
-    
     return jsonify({"response": response})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
